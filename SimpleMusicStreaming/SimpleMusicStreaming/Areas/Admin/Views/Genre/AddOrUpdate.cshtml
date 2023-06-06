@@ -1,0 +1,81 @@
+﻿@using CoreLib.Config
+@using CoreLib.Entities
+@using SimpleMusicStreaming.Areas.Admin.Models
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Manage genres";
+    string error = TempData["error"] as string;
+}
+
+@model CGenre
+<div class="row">
+    <div class="col-md-12">
+        <h3>Update genre</h3>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <p class="text-danger">@error</p>
+        }
+        <form asp-action="@LinkRoute.AddOrUpdate" asp-controller="Genre" id="formData" method="post">
+            <div class="form-group row">
+                <label for="productname" class="col-md-12 col-form-label">Name</label>
+                <div class="col-sm-12">
+                    <input type="text" name="name" class="form-control" id="productname" value="" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="text" name="image" id="genre-avatar" value="" hidden />
+                <label class="control-label" for="exampleInputPassword1">Upload an image</label>
+                <div class="col-md-12 text-center">
+                    <img src=@Url.Content("~/admin/assets/img/genre-.jpg") id="image-upload" class="rounded mx-auto d-block" style="width: 256px" />
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="file" name="fileUpload" id="exampleInputFile">
+                <i class="help-block">Upload an image</i>
+            </div>
+            <div class="form-group row" style="display:flex;justify-content:space-between">
+                <div class="col-sm-2">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+                <div class="col-sm-2">
+                    <a class="btn btn-warning" href="/admin/genre/index">Back</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+
+        $(document).on('change', 'input[name="fileUpload"]', function () {
+            let files = $(this).prop("files");
+            let formData = new FormData();
+            formData.append("file", files[0]);
+            console.log(formData)
+            $.ajax({
+                url: "@Url.Action("UploadFile", "Genre")",
+                type: "post",
+                data: formData,
+                contentType: false,
+                processData: false,
+                beforeSend: () => {
+
+                },
+                success: res => {
+                    if (res.status == 'success') {
+                        $('#image-upload').attr('src', res.filePath);
+                        $('#genre-avatar').val(res.filePath);
+                    }
+                    else {
+                        console.log(res.status);
+                    }
+                },
+                error: (error) => {
+                    console.log(error);
+                }
+            })
+        });
+    </script>
+}

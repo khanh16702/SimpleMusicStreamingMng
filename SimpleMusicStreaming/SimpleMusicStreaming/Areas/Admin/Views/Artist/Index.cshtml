@@ -1,0 +1,415 @@
+﻿@using CoreLib.Config;
+@model CoreLib.Entities.CArtist;
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Manage Artists";
+    string error = TempData["error"] as string;
+}
+
+<div class="col-md-10" id="artist-index">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Artists</h4>
+            <p class="card-description">
+                List of Artists
+            </p>
+            <div style="justify-content:space-between;display:flex;align-items:center">
+                <div style="display:flex">
+                    <div style="margin-right:10px">
+                        <div class="form-inline" style="display:flex">
+                            <input type="text" id="search-name" name="name" class="form-control" placeholder="Type name..." />
+                            <button class="btn btn-primary ml-3" id="search-artist">Search</button>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="height:100%">
+                            <select class="form-select" id="select-countries" style="width:100%;height:100%">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <a onclick="updateArtistView(0)" class="btn btn-primary" style="height:50%">Add</a>
+            </div>
+            <div class="col-md-12 nopadding">
+                <table class="table table-hover" id="table-data" width="100%">
+                
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="artist-addorupdate">
+    <div class="col-md-12">
+        <h3>Update Artist</h3>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <p class="text-danger">@error</p>
+        }
+        <form id="artist-formData" enctype="multipart/form-data" method="post">
+            <input type="hidden" asp-for="Id" class="form-control" id="artist-id">
+            <input type="hidden" asp-for="CreatedDate" class="form-control" id="artist-createddate">
+            <div class="form-group row">
+                <label for="productname" class="col-md-12 col-form-label">Name</label>
+                <div class="col-sm-12">
+                    <input type="text" asp-for="Name" class="form-control" id="artist-name" required>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="productcountry" class="col-md-12 col-form-label">Country</label>
+                <div class="col-sm-12">
+                    <select class="form-select col-md-12" id="select-update-countries" asp-for="CountryId" style="width:100%">
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input type="text" asp-for="Image" id="artist-avatar" hidden />
+                <label class="control-label" for="exampleInputPassword1">Upload an image</label>
+                <div class="col-md-12 text-center">
+                    <img id="image-upload" class="rounded mx-auto d-block" style="width: 256px" />
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="file" id="file-upload">
+                <i class="help-block">Upload an image</i>
+            </div>
+
+            <fieldset class="form-group">
+                <div class="row">
+                    <label class="col-form-label col-md-12 pt-0">Active:</label>
+                    <div>
+                        <input class="form-check-input" type="radio" asp-for="IsActive" id="status1" value="true" checked>
+                        <label class="form-check-label" for="status1">
+                            Yes
+                        </label>
+                    </div>
+                    <div>
+                        <input class="form-check-input" type="radio" asp-for="IsActive" id="status2" value="false">
+                        <label class="form-check-label" for="status2">
+                            No
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+        <div class="form-group row" style="display:flex;justify-content:space-between">
+            <div class="col-sm-2">
+                <button id="submit-artist-form" class="btn btn-primary">Submit</button>
+            </div>
+            <div class="col-sm-2">
+                <a class="btn btn-warning" id="back-to-index">Back</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+@section Scripts{
+    <script>
+
+        $('#back-to-index').click(function() {
+            $('#artist-addorupdate').hide();
+            $('#artist-index').show();
+
+            //var defaultPath = "";
+            //$.get('https://localhost:7228/api/artistapi/GetDefaultImage')
+            //.done(function(res) {
+            //    defaultPath = res;
+            //    //console.log($('#artist-avatar').val());
+            //    //console.log(defaultPath);
+            //    $.get('@Url.Action("DeleteUnusedFile", "Artist")' + "?path=" + $('#artist-avatar').val() + "&defaultImage=" + defaultPath)
+            //    .done(function(res) {
+            //        console.log(res.deletePath);
+            //        console.log(res.defaultImagePath);
+            //    })
+            //})
+        })
+
+        function updateArtistView(id) {
+            $('#artist-index').hide();
+            $('#artist-addorupdate').show();
+
+            $.ajax({
+                url: 'https://localhost:7228/api/artistapi/getartistdetail?id=' + id,
+                type: "get",
+                contentType: false,
+                processData: false,
+                success: res => {
+                    if (res.image != null) {
+                        $('#artist-id').val(res.id);
+                        $('#artist-createddate').val(res.createdDate);
+                        $('#artist-name').val(res.name);
+                        $('#image-upload').attr('src', res.image);
+                        $('#artist-avatar').val(res.image);
+                    } 
+                    else {
+                        $.get('https://localhost:7228/api/artistapi/getdefaultimage')
+                        .done(function(res) {
+                            $('#artist-id').val(0);
+                            $('#artist-createddate').val("2000-01-01T00:00");
+                            $('#artist-name').val(null);
+                            $('#image-upload').attr('src', res);
+                            $('#artist-avatar').val(res);
+                        })
+                    }
+
+                    $.get('https://localhost:7228/api/countryapi')
+                    .done(function (countryRes) {
+                        var artistId = $('#artist-id').val();
+                        console.log(artistId);
+                        if (artistId != 0) {
+                            $.get('https://localhost:7228/api/artistapi/getartistdetail?id=' + artistId)
+                                .done(function (artistRes) {
+                                    $('#select-update-countries').html('');
+                                    let countryName = artistRes.countryName;
+                                    let attribute = "";
+                                    countryRes.forEach(function (item, index) {
+                                        console.log(item);
+                                        let itemName = item.name;
+                                        if (countryName == itemName) {
+                                            attribute = "selected";
+                                        }
+                                        else {
+                                            attribute = "";
+                                        }
+                                        let row = `<option ${attribute} value="${item.id}">${item.name}</option>`;
+                                        $('#select-update-countries').append(row);
+                                    })
+                                })
+                        }
+                        else {
+                            $.get('https://localhost:7228/api/countryapi')
+                                .done(function (res) {
+                                    $('#select-update-countries').html('');
+                                    $('#select-update-countries').append(`<option value="0">Select country</option>`);
+                                    res.forEach(function (item, index) {
+                                        let row = `<option value="${item.id}">${item.name}</option>`;
+                                        $('#select-update-countries').append(row);
+                                    })
+                                })
+                                .fail(function (error) {
+                                    console.log(error);
+                                });
+                        }
+                     })
+                            
+                }
+                
+            })
+            .fail(function (error) {
+                console.log(error);
+            })
+        }
+
+
+        $('#file-upload').change(function() {
+            let files = $(this).prop("files");
+            let formData = new FormData();
+            formData.append("file", files[0]);
+            $.ajax({
+                url: "@Url.Action("UploadFile", "Artist")",
+                type: "post",
+                data: formData,
+                contentType: false,
+                processData: false,
+                beforeSend: () => {
+
+                },
+                success: res => {
+                    if (res.status == 'success') {
+                        $('#image-upload').attr('src', res.filePath);
+                        $('#artist-avatar').val(res.filePath);
+                    }
+                    else {
+                        console.log(res.status);
+                    }
+                },
+                error: (error) => {
+                    console.log(error);
+                }
+            })
+        })
+
+
+        $('#submit-artist-form').click(function () {
+            if (($('#artist-name').val() == "") || ($('#select-update-countries').find(":selected").val() == 0)) {
+                alert("Please fill in all fields!");
+                return;
+            }
+
+            let formData = new FormData($('#artist-formData')[0]);
+
+            $.ajax({
+                url: '@Url.Action(LinkRoute.AddOrUpdate, "Artist")',
+                type: "post",
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: res => {
+                    if (res.code == 0) {
+                        alert(res.message);
+                        $('#artist-addorupdate').hide();
+                        $('#artist-index').show();
+                        loadData();
+                    }
+                    else {
+                        alert("Error!");
+                    }
+                    console.log(res);
+                },
+                error: (error) => {
+                    console.log(error);
+                }
+
+            })
+
+        })
+
+        function loadData() {
+            var renderColumns = [
+                {
+                    orderable: false,
+                    title: "Image",
+                    data: "image",
+                    render: function(data, type, row) {
+                        return `<img src=${row.image} alt=""/>`
+                    }
+                },
+                {
+                    orderable: false,
+                    title: "Name",
+                    data: "name"
+                },
+                {
+                    orderable: false,
+                    title: "Country",
+                    data: "countryName"
+                },
+                {
+                    orderable: false,
+                    title: "Is Active",
+                    data: "isActive"
+                },
+                {
+                    orderable: false,
+                    title: "Tasks",
+                    data: "id",
+                    render: function (data, type, row) {
+                        return `<div style="display:flex">
+                                    <a onclick="updateArtistView(${row.id})" style="cursor:pointer;margin:5px"><i class="fas fa-edit"></i></a>
+                                    <a style="cursor:pointer;margin:5px" onclick="deleteItem(${row.id})"><i class="fas fa-delete"></i></a>
+                                </div>`
+                    }
+                }
+            ]
+
+            var artistName = $('#search-name').val();
+            if (artistName == "") {
+                artistName = '\"\"';
+            }
+            var selectedCountry = $('#select-countries').find(":selected").val();
+            if (selectedCountry == null) {
+                selectedCountry = 0;
+            }
+
+            //$.get('https://localhost:7228/api/artistapi/getartists' + "?name=" + artistName + "&countryId=" + selectedCountry)
+            $.get('@Url.Action("GetArtists", "Artist")' + "?name=" + artistName + "&countryId=" + selectedCountry)
+            .done(function(res) {
+                    var response = JSON.parse(res);
+
+                let listArtistTable = $('#table-data').DataTable({
+                    dom: "lt<'d-flex justify-content-center'p>",
+                    destroy: true,
+                        data: response.artistsView,
+                    columns: renderColumns,
+                    ordering: false,
+                    pageLength: 10,
+                    lengthChange: false
+                });
+                console.log(typeof(res));
+            })
+            .fail(function(error) {
+                console.log(error);
+            });
+        }
+
+        $(document).ready(function() {
+            //var alertMes = "@TempData["Alert"]";
+            //if (alertMes = ! "") {
+            //    alert(alertMes);
+            //}
+            $('#artist-index').show();
+            $('#artist-addorupdate').hide();
+
+            loadData();
+        })
+
+        function deleteItem(id) {
+            Swal.fire({
+                title: "Alert",
+                text: "Delete this item?",
+                type: "warning",
+                cancelButtonText: "No",
+                showCancelButton: true,
+                confirmButtonText: "Yes"
+            }).then(result => {
+                if (result.value) {
+                    $.ajax({
+                        //url: 'https://localhost:7228/api/artistapi?id=' + id,
+                        url: '@Url.Action("Delete", "Artist")?id=' + id,
+                        type: 'get'
+                    }).done(function data() {
+                        if (data.error) {
+                            return;
+                        }
+                        if (data.code == '-1') {
+                            alert(data.message);
+                            return;
+                        }
+                        else {
+                            //alert(data.message);
+                            loadData();
+                        }
+                    })
+                }
+            })
+        }
+
+        $('#search-artist').click(function() {
+            loadData();
+        })
+
+        $.get('https://localhost:7228/api/countryapi')
+            .done(function (res) {
+                $('#select-countries').html('');
+                $('#select-countries').append(`<option value="0">Select country</option>`);
+                res.forEach(function (item, index) {
+                    let row = `<option value="${item.id}">${item.name}</option>`;
+                    $('#select-countries').append(row);
+                })
+            })
+            .fail(function (error) {
+                console.log(error);
+            });
+
+        $('#select-countries').change(function() {
+            loadData();
+        })
+
+        $.get('https://localhost:7228/api/countryapi')
+            .done(function (res) {
+                $('#select-update-countries').html('');
+                $('#select-update-countries').append(`<option value="0">Select country</option>`);
+                res.forEach(function (item, index) {
+                    let row = `<option value="${item.id}">${item.name}</option>`;
+                    $('#select-update-countries').append(row);
+                })
+            })
+            .fail(function (error) {
+                console.log(error);
+            });
+    </script>
+}

@@ -1,0 +1,16 @@
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\obj\Debug\net6.0\CommonLib.csproj.AssemblyReference.cache
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\obj\Debug\net6.0\CommonLib.GeneratedMSBuildEditorConfig.editorconfig
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\obj\Debug\net6.0\CommonLib.AssemblyInfoInputs.cache
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\obj\Debug\net6.0\CommonLib.AssemblyInfo.cs
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\obj\Debug\net6.0\CommonLib.csproj.CoreCompileInputs.cache
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\bin\Debug\net6.0\NOTICE.TXT
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\bin\Debug\net6.0\CommonLib.deps.json
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\bin\Debug\net6.0\CommonLib.dll
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\bin\Debug\net6.0\CommonLib.pdb
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\bin\Debug\net6.0\CoreLib.dll
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\bin\Debug\net6.0\CoreLib.pdb
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\obj\Debug\net6.0\CommonLib.csproj.CopyComplete
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\obj\Debug\net6.0\CommonLib.dll
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\obj\Debug\net6.0\refint\CommonLib.dll
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\obj\Debug\net6.0\CommonLib.pdb
+D:\ThucTap\.NETCore\projectBaoCao\SimpleMusicStreaming\CommonLib\obj\Debug\net6.0\ref\CommonLib.dll

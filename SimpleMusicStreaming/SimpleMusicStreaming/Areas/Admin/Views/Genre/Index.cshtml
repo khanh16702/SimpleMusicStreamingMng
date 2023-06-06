@@ -1,0 +1,131 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Manage Genres";
+}
+
+<div class="col-md-10">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Genres</h4>
+            <p class="card-description">
+                List of Genres
+            </p>
+            <div style="justify-content:space-between;display:flex;align-items:center">
+                <div style="margin-right:10px">
+                    <div class="form-inline" style="display:flex">
+                        <input type="text" id="search-name" name="name" class="form-control" placeholder="Type name..." />
+                        <button class="btn btn-primary ml-3" id="search-genre">Search</button>
+                    </div>
+                </div>
+                <a href="/admin/genre/addorupdate?id=0" class="btn btn-primary" style="height:50%">Add</a>
+            </div>
+            <div class="col-md-12 nopadding">
+                <table class="table table-hover" id="table-data">
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script>
+        function loadData() {
+            var renderColumns = [
+                {
+                    orderable: false,
+                    title: "Image",
+                    data: "image",
+                    render: function (data, type, row) {
+                        return `<img src=${row.image} alt=""/>`
+                    }
+                },
+                {
+                    orderable: false,
+                    title: "Name",
+                    data: "name"
+                },
+                {
+                    orderable: false,
+                    title: "Is Active",
+                    data: "isActive"
+                },
+                {
+                    orderable: false,
+                    title: "Tasks",
+                    data: "id",
+                    render: function (data, type, row) {
+                        return `<div style="display:flex">
+                                    <a style="cursor:pointer;margin:5px" onclick="deleteItem(${row.id})"><i class="fas fa-delete"></i></a>
+                                </div>`
+                    }
+                }
+            ]
+
+            var genreName = $('#search-name').val();
+            if (genreName == null) {
+                genreName = '';
+            }
+
+            $.get('@Url.Action("GetGenres", "Genre")' + "?name=" + genreName)
+                .done(function (res) {
+                    let listArtistTable = $('#table-data').DataTable({
+                        dom: "lt<'d-flex justify-content-center'p>",
+                        destroy: true,
+                        data: res.genres,
+                        columns: renderColumns,
+                        ordering: false,
+                        pageLength: 10,
+                        lengthChange: false
+                    });
+                })
+                .fail(function (error) {
+                    console.log(error);
+                });
+        }
+
+        $(document).ready(function () {
+            //var alertMes = "@TempData["Alert"]";
+            //if (alertMes = ! "") {
+            //    alert(alertMes);
+            //}
+            loadData();
+        })
+
+        function deleteItem(id) {
+            Swal.fire({
+                title: "Alert",
+                text: "Delete this item?",
+                type: "warning",
+                cancelButtonText: "No",
+                showCancelButton: true,
+                confirmButtonText: "Yes"
+            }).then(result => {
+                if (result.value) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Genre")' + '?id=' + id,
+                        type: 'delete'
+                    }).done(function data() {
+                        if (data.error) {
+                            return;
+                        }
+                        if (data.code == '-1') {
+                            //alert(data.message);
+                            return;
+                        }
+                        else {
+                            //alert(data.message);
+                            loadData();
+                        }
+                    })
+                }
+            })
+        }
+
+        $('#search-genre').click(function () {
+            loadData();
+        })
+
+
+    </script>
+}

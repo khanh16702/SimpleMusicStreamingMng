@@ -1,0 +1,265 @@
+﻿@using CoreLib.Config
+@using SimpleMusicStreaming.Areas.Admin.Models
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Manage Tracks";
+    string error = TempData["error"] as string;
+}
+
+@model CTrackViewModel
+<div class="row">
+    <div class="col-md-12">
+        <h3>Update Track</h3>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <p class="text-danger">@error</p>
+        }
+        <form id="track-form-data" method="post">
+            @if (Model.Id == 0) {
+                <div class="form-group row">
+                    <label class="col-md-12 col-form-label">Name</label>
+                    <div class="col-sm-12">
+                        <input type="text" name="name" class="form-control" id="productname" required>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-md-12 col-form-label">In An Album Of</label>
+                    <div class="col-sm-12">
+                        <select class="form-select col-md-12" id="select-artists" name="authorOfAlbumId" style="width:100%">
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-md-12 col-form-label">Album Name</label>
+                    <div class="col-sm-12">
+                        <select class="form-select col-md-12" id="select-albums" name="albumid" style="width:100%">
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-md-12 col-form-label">Other Artists</label>
+                    <div class="col-sm-12">
+                        <select class="form-select col-md-12" multiple id="select-artists-join" name="artistsIdList" style="width:100%;height:200px">
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-md-12 col-form-label">Genres</label>
+                    <div class="col-sm-12">
+                        <select class="form-select col-md-12" multiple id="select-genres" name="genresIdList" style="width:100%;height:200px">
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Upload an audio file</label>
+                </div>
+                <div class="form-group">
+                    <input type="file" name="audioUpload" id="inputFileAudio" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="image" id="track-avatar" hidden />
+                    <label class="control-label">Upload an image</label>
+                    <div class="col-md-12 text-center">
+                        @if (Model.Id == 0)
+                        {
+                            <img src=@Url.Content("~/admin/assets/img/track-.png") id="image-upload" class="rounded mx-auto d-block" style="width: 256px" />
+                        }
+                        else
+                        {
+                            <img src=@Url.Content(Model.Image) id="image-upload" class="rounded mx-auto d-block" style="width: 256px" />
+                        }
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="file" name="imageUpload" id="exampleInputFile">
+                    <i class="help-block">Upload an image</i>
+                </div>
+            }
+            
+            else {
+                <input type="hidden" name="id" class="form-control" value="@Model.Id">
+                <div class="form-group row">
+                    <label class="col-md-12 col-form-label">Name</label>
+                    <div class="col-sm-12">
+                        <input type="text" name="name" class="form-control" id="productname" value="@Model.Name" readonly>
+                    </div>
+                </div>
+                <fieldset class="form-group">
+                    <div class="row">
+                        <label class="col-form-label col-md-12 pt-0">Active:</label>
+                            @if (Model.IsActive)
+                            {
+                                <div>
+                                    <input class="form-check-input" type="radio" name="isactive" id="status1" value="true" checked>
+                                    <label class="form-check-label" for="status1">
+                                        Yes
+                                    </label>
+                                </div>
+                                <div>
+                                    <input class="form-check-input" type="radio" name="isactive" id="status2" value="false">
+                                    <label class="form-check-label" for="status2">
+                                        No
+                                    </label>
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    <input class="form-check-input" type="radio" name="isactive" id="status1" value="true">
+                                    <label class="form-check-label" for="status1">
+                                        Yes
+                                    </label>
+                                </div>
+                                <div>
+                                    <input class="form-check-input" type="radio" name="isactive" id="status2" value="false" checked>
+                                    <label class="form-check-label" for="status2">
+                                        No
+                                    </label>
+                                </div>
+                            }
+                    </div>
+                </fieldset>
+            }
+        </form>
+        <div class="form-group row" style="display:flex;justify-content:space-between">
+            <div class="col-sm-2">
+                <button id="submit-track-form" class="btn btn-primary">Submit</button>
+            </div>
+            <div class="col-sm-2">
+                <a class="btn btn-warning" href="/admin/track/index">Back</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        $('#submit-track-form').click(function() {
+            let formData = new FormData($('#track-form-data')[0]);
+            let audioFile = $('#inputFileAudio').prop("files")[0];
+            let artistsIdList = $('#select-artists-join option:selected').val();
+            let genresIdList = $('#select-genres option:selected').val();
+            let authorOfAlbumId = $('#select-artists').val();
+
+            $.ajax({
+                url: "@Url.Action(LinkRoute.AddOrUpdate, "Track")",
+                type: "post",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: res => {
+                    window.location.href = "/admin/track/index";
+                    //console.log(res);
+                },
+                error: (error) => {
+                    console.log(error);
+                }
+
+            })
+
+        })
+
+        $(document).on('change', 'input[name="imageUpload"]', function () {
+            let files = $(this).prop("files");
+            let formData = new FormData();
+            formData.append("file", files[0]);
+            $.ajax({
+                url: "@Url.Action("UploadFile", "Track")",
+                type: "post",
+                data: formData,
+                contentType: false,
+                processData: false,
+                beforeSend: () => {
+
+                },
+                success: res => {
+                    if (res.status == 'success') {
+                        $('#image-upload').attr('src', res.filePath);
+                        $('#track-avatar').val(res.filePath);
+                    }
+                    else {
+                        console.log(res.status);
+                    }
+                },
+                error: (error) => {
+                    console.log(error);
+                }
+            })
+        });
+
+        function getArtists(authorOfAlbumId) {
+            if (authorOfAlbumId > 0) {
+                $.get('@Url.Action("GetAllArtists", "Track")' + "?authorOfAlbumId=" + authorOfAlbumId)
+                    .done(function (res) {
+                        $('#select-artists-join').html('');
+                        $('#select-artists-join').append(`<option value="0">None</option>`);
+                        res.forEach(function (item, index) {
+                            let row = `<option value="${item.id}">${item.name}</option>`;
+                            $('#select-artists-join').append(row);
+                        })
+                    })
+                    .fail(function (error) {
+                        console.log(error);
+                    });
+            }
+            else {
+                $.get('@Url.Action("GetAllArtists", "Track")' + "?authorOfAlbumId=" + authorOfAlbumId)
+                    .done(function (res) {
+                        $('#select-artists').html('');
+                        $('#select-artists').append(`<option value="0">Select artist</option>`);
+                        res.forEach(function (item, index) {
+                            let row = `<option value="${item.id}">${item.name}</option>`;
+                            $('#select-artists').append(row);
+                        })
+                    })
+                    .fail(function (error) {
+                        console.log(error);
+                    });
+            }
+        }
+
+        function getAlbums(artistId) {
+            $.get('@Url.Action("GetAlbums", "Track")' + "?artistId=" + artistId)
+                .done(function (res) {
+                    $('#select-albums').html('');
+                    $('#select-albums').append(`<option value="0">Select album</option>`);
+                    res.forEach(function (item, index) {
+                        let row = `<option value="${item.id}">${item.name}</option>`;
+                        $('#select-albums').append(row);
+                    })
+                })
+                .fail(function (error) {
+                    console.log(error);
+                });
+        }
+
+        $(document).ready(function() {
+            getArtists(0);
+            $.get('@Url.Action("GetAllGenres", "Track")')
+                .done(function (res) {
+                    $('#select-genres').html('');
+                    res.forEach(function (item, index) {
+                        let row = `<option value="${item.id}">${item.name}</option>`;
+                        $('#select-genres').append(row);
+                    })
+                })
+                .fail(function (error) {
+                    console.log(error);
+                });
+        })
+
+        //$('#select-genres').click(function() {
+        //    console.log($('#select-genres').find(":selected").val());
+        //})
+
+        $('#select-artists').change(function() {
+            if ($('#select-artists').find(":selected").val() == 0) {
+                $('#select-albums').html('');
+                $('#select-artists-join').html('');
+            }
+            getArtists($('#select-artists').find(":selected").val());
+            getAlbums($('#select-artists').find(":selected").val());
+        })
+    </script>
+}

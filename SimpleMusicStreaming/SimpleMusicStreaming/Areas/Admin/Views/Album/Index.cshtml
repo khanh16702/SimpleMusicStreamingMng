@@ -1,0 +1,119 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Manage Albums";
+}
+
+<div class="col-md-10">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Albums</h4>
+            <p class="card-description">
+                List of Albums
+            </p>
+            <div style="justify-content:space-between;display:flex;align-items:center">
+                <div style="display:flex">
+                    <div style="margin-right:10px">
+                        <div class="form-inline" style="display:flex">
+                            <input type="text" id="search-name" name="name" class="form-control" placeholder="Type name..." />
+                            <button class="btn btn-primary ml-3" id="search-album">Search</button>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="height:100%">
+                            <select class="form-select" id="select-artists" style="width:100%;height:100%">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <a href="/admin/album/addorupdate" class="btn btn-primary" style="height:50%">Add</a>
+            </div>
+            <div class="col-md-12 nopadding">
+                <table class="table table-hover" id="table-data">
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script>
+        function loadData() {
+            var renderColumns = [
+                {
+                    orderable: false,
+                    title: "Image",
+                    data: "image",
+                    render: function (data, type, row) {
+                        return `<img src=${row.image} alt=""/>`
+                    }
+                },
+                {
+                    orderable: false,
+                    title: "Name",
+                    data: "name"
+                },
+                {
+                    orderable: false,
+                    title: "Artist",
+                    data: "artistName"
+                },
+                {
+                    orderable: false,
+                    title: "Is Active",
+                    data: "isActive"
+                }
+            ]
+
+            var albumName = $('#search-name').val();
+            if (albumName == null) {
+                albumName = '';
+            }
+            var selectedArtist = $('#select-artists').find(":selected").val();
+
+            $.get('@Url.Action("GetAlbums", "Album")' + "?name=" + albumName + "&artistId=" + selectedArtist)
+                .done(function (res) {
+                    let listArtistTable = $('#table-data').DataTable({
+                        dom: "lt<'d-flex justify-content-center'p>",
+                        destroy: true,
+                        data: res.albumsView,
+                        columns: renderColumns,
+                        ordering: false,
+                        pageLength: 10,
+                        lengthChange: false
+                    });
+                })
+                .fail(function (error) {
+                    console.log(error);
+                });
+        }
+
+        $(document).ready(function () {
+            //var alertMes = "@TempData["Alert"]";
+            //if (alertMes = ! "") {
+            //    alert(alertMes);
+            //}
+            loadData();
+        })
+        $('#search-album').click(function () {
+            loadData();
+        })
+
+        $.get('@Url.Action("GetAllArtists", "Album")')
+            .done(function (res) {
+                $('#select-artists').html('');
+                $('#select-artists').append(`<option value="0">Select artist</option>`);
+                res.forEach(function (item, index) {
+                    let row = `<option value="${item.id}">${item.name}</option>`;
+                    $('#select-artists').append(row);
+                })
+            })
+            .fail(function (error) {
+                console.log(error);
+            });
+
+        $('#select-artists').change(function () {
+            loadData();
+        })
+    </script>
+}

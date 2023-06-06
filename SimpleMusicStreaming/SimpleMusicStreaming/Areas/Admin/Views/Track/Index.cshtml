@@ -1,0 +1,195 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Manage Tracks";
+}
+
+<div class="col-md-10">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Tracks</h4>
+            <p class="card-description">
+                List of Tracks
+            </p>
+            <p>Search to start</p>
+            <div style="justify-content:space-between;display:flex;align-items:center">
+                <div style="display:flex">
+                    <div style="margin-right:10px">
+                        <div class="form-inline" style="display:flex">
+                            <input type="text" id="search-name" name="name" class="form-control" placeholder="Type name..." />
+                            <button class="btn btn-primary ml-3" id="search-track">Search</button>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="height:100%">
+                            <select class="form-select" id="select-artists" style="width:100%;height:100%">
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="height:100%">
+                            <select class="form-select" id="select-albums" style="width:100%;height:100%">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <a href="/admin/track/addorupdate" class="btn btn-primary" style="height:50%">Add</a>
+            </div>
+            <div class="col-md-12 nopadding">
+                <table class="table table-hover" id="table-data">
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script>
+        function loadData() {
+            var renderColumns = [
+                {
+                    orderable: false,
+                    title: "Image",
+                    data: "image",
+                    render: function (data, type, row) {
+                        return `<img src=${row.image} alt=""/>`
+                    }
+                },
+                {
+                    orderable: false,
+                    title: "Name",
+                    data: "name"
+                },
+                {
+                    orderable: false,
+                    title: "Artists",
+                    data: "artistName"
+                },
+                {
+                    orderable: false,
+                    title: "Album",
+                    data: "albumName"
+                },
+                {
+                    orderable: false,
+                    title: "Genres",
+                    data: "genreName"
+                },
+                {
+                    orderable: false,
+                    title: "Active",
+                    data: "isActive"
+                },
+                {
+                    orderable: false,
+                    title: "Tasks",
+                    data: "id",
+                    data: "media",
+                    render: function (data, type, row) {
+                        return `<div style="display:flex">
+                                     <a href="/admin/track/addorupdate?id=${row.id}" style="cursor:pointer;margin:5px"><i class="fas fa-edit"></i></a>
+                                     <a style="cursor:pointer;margin:5px" onclick="deleteItem(${row.id})"><i class="fas fa-delete"></i></a>
+                                     <audio controls style="width:240px;height:30px">
+                                         <source src="${row.media}">
+                                     </audio> 
+                                </div>`
+                    }
+                }
+            ]
+
+            var trackName = $('#search-name').val();
+            if (trackName == null) {
+                trackName = '';
+            }
+
+            var selectedArtist = $('#select-artists').find(":selected").val();
+            var selectedAlbum = $('#select-albums').find(":selected").val();
+
+
+            if (trackName == "" && selectedArtist == 0) {
+                alert("Please type in name or select artist/album!");
+                return;
+            }
+
+            $.get('@Url.Action("GetTracks", "Track")' + "?name=" + trackName + "&artistId=" + selectedArtist + "&albumId=" + selectedAlbum)
+                .done(function (res) {
+                    let listArtistTable = $('#table-data').DataTable({
+                        dom: "lt<'d-flex justify-content-center'p>",
+                        destroy: true,
+                        data: res.tracksView,
+                        columns: renderColumns,
+                        ordering: false,
+                        pageLength: 10,
+                        lengthChange: false
+                    });
+                })
+                .fail(function (error) {
+                    console.log(error);
+                });
+
+        }
+
+        function deleteItem(id) {
+            Swal.fire({
+                title: "Alert",
+                text: "Delete this item?",
+                type: "warning",
+                cancelButtonText: "No",
+                showCancelButton: true,
+                confirmButtonText: "Yes"
+            }).then(result => {
+                if (result.value) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Track")' + '?id=' + id,
+                        type: 'delete'
+                    }).done(function data() {
+                        if (data.error) {
+                            return;
+                        }
+                        if (data.code == '-1') {
+                            //alert(data.message);
+                            return;
+                        }
+                        else {
+                            //alert(data.message);
+                            loadData();
+                        }
+                    })
+                }
+            })
+        }
+
+        $('#search-track').click(function () {
+            loadData();
+        })
+
+        $('#select-artists').change(function() {
+            $.get('@Url.Action("GetAlbums", "Track")' + "?artistId=" + $('#select-artists').find(":selected").val())
+                .done(function (res) {
+                    $('#select-albums').html('');
+                    $('#select-albums').append(`<option value="0">Select album</option>`);
+                    res.forEach(function(item, index) {
+                        $('#select-albums').append(`<option value="${item.id}">${item.name}</option>`);
+                    })
+                 })
+                .fail(function (error) {
+                    console.log(error);
+                });
+        })
+
+        $(document).ready(function() {
+            $.get('@Url.Action("GetAllArtists", "Track")')
+                .done(function (res) {
+                    $('#select-artists').html('');
+                    $('#select-artists').append(`<option value="0">Select artist</option>`);
+                    res.forEach(function (item, index) {
+                        let row = `<option value="${item.id}">${item.name}</option>`;
+                        $('#select-artists').append(row);
+                    })
+                })
+                .fail(function (error) {
+                    console.log(error);
+                });
+        })
+    </script>
+}

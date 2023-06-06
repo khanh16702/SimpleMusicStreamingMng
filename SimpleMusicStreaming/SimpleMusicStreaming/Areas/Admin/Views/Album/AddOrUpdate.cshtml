@@ -1,0 +1,101 @@
+﻿@using CoreLib.Config
+@using SimpleMusicStreaming.Areas.Admin.Models
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Manage Albums";
+    string error = TempData["error"] as string;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h3>Update Albums</h3>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <p class="text-danger">@error</p>
+        }
+        <form asp-action="@LinkRoute.AddOrUpdate" asp-controller="Album" id="formData" method="post">
+            <div class="form-group row">
+                <label for="productname" class="col-md-12 col-form-label">Name</label>
+                <div class="col-sm-12">
+                    <input type="text" name="name" class="form-control" id="productname" value="" required>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="productcountry" class="col-md-12 col-form-label">Artist</label>
+                <div class="col-sm-12">
+                    <select class="form-select col-md-12" id="select-artists" name="artistid" style="width:100%">
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input type="text" name="image" id="album-avatar" value="" hidden />
+                <label class="control-label" for="exampleInputPassword1">Upload an image</label>
+                <div class="col-md-12 text-center">
+                    <img src=@Url.Content("~/admin/assets/img/album-.png") id="image-upload" class="rounded mx-auto d-block" style="width: 256px" />
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="file" name="fileUpload" id="exampleInputFile">
+                <i class="help-block">Upload an image</i>
+            </div>
+
+            <div class="form-group row" style="display:flex;justify-content:space-between">
+                <div class="col-sm-2">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+                <div class="col-sm-2">
+                    <a class="btn btn-warning" href="/admin/album/index">Back</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+
+        $(document).on('change', 'input[name="fileUpload"]', function () {
+            let files = $(this).prop("files");
+            let formData = new FormData();
+            formData.append("file", files[0]);
+            console.log(formData)
+            $.ajax({
+                url: "@Url.Action("UploadFile", "Album")",
+                type: "post",
+                data: formData,
+                contentType: false,
+                processData: false,
+                beforeSend: () => {
+
+                },
+                success: res => {
+                    if (res.status == 'success') {
+                        $('#image-upload').attr('src', res.filePath);
+                        $('#album-avatar').val(res.filePath);
+                    }
+                    else {
+                        console.log(res.status);
+                    }
+                },
+                error: (error) => {
+                    console.log(error);
+                }
+            })
+        });
+
+        $.get('@Url.Action("GetAllArtists", "Album")')
+            .done(function(res) {
+                $('#select-artists').html('');
+                res.forEach(function(item, index) {
+                    console.log(item);
+                    let row = `<option value="${item.id}">${item.name}</option>`;
+                    $('#select-artists').append(row);
+                })
+            })
+            .fail(function(error) {
+                console.log(error);
+            });
+    </script>
+}

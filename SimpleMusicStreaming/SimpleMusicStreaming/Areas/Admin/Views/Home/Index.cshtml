@@ -1,0 +1,15 @@
+﻿
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Dashboard";
+}
+
+<div>
+    <ul style="list-style:none">
+        <li>Total tracks: @ViewBag.tracksCount</li>
+        <li>Total artists: @ViewBag.artistsCount from @ViewBag.countriesCount countries</li>
+        <li>Total albums: @ViewBag.albumsCount</li>
+        <li>Total genres: @ViewBag.genresCount</li>
+    </ul>
+</div>
+
